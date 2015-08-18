@@ -1,6 +1,6 @@
-__author__ = 'caoliang'
+__author__ = 'caoliang2598'
 
-import webbrowser
+
 class Movie():
     def __init__(self, title, story_line, poster_image_url,
                  trailer_youtube_url):

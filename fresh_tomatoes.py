@@ -84,7 +84,6 @@ main_page_head = '''
 
 # The main page layout and title bar
 main_page_content = '''
-<!DOCTYPE html>
 <html lang="en">
   <body>
     <!-- Trailer Video Modal -->
@@ -102,7 +101,7 @@ main_page_content = '''
     
     <!-- Main Page Content -->
     <div class="container">
-      <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="navbar navbar-inverse navbar-static-top" role="navigation">
         <div class="container">
           <div class="navbar-header">
             <a class="navbar-brand" href="#">Fresh Tomatoes Movie Trailers</a>
@@ -111,31 +110,29 @@ main_page_content = '''
       </div>
     </div>
 
-    <div id="myCarousel" class="carousel slide" data-ride="carousel">
-    <!-- Indicators -->
-    <ol class="carousel-indicators">
-    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-    <li data-target="#myCarousel" data-slide-to="1"></li>
-    <li data-target="#myCarousel" data-slide-to="2"></li>
-    <li data-target="#myCarousel" data-slide-to="3"></li>
-  </ol>
+    <div class="container">
+        <div id="movie-carousel" class="carousel slide" data-ride="carousel">
+            <!-- Indicators -->
+            <ol class="carousel-indicators">
+                {movie_sliders_indicators}
+            </ol>
 
-  <!-- Wrapper for slides -->
-  <div class="carousel-inner" role="listbox">
-    {movie_sliders}
-  </div>
+            <!-- Wrapper for slides -->
+            <div class="carousel-inner" role="listbox">
+                {movie_sliders}
+            </div>
 
-  <!-- Left and right controls -->
-  <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
-    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-    <span class="sr-only">Previous</span>
-  </a>
-  <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
-    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-    <span class="sr-only">Next</span>
-  </a>
-</div>
-
+            <!-- Left and right controls -->
+            <a class="left carousel-control" href="#movie-carousel" role="button" data-slide="prev">
+                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="right carousel-control" href="#movie-carousel" role="button" data-slide="next">
+                <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+    </div>
 
     <div class="container">
       {movie_tiles}
@@ -152,27 +149,64 @@ movie_tile_content = '''
     <h2>{movie_title}</h2>
 </div>
 '''
-
+# Movie carousel html template
 movie_slider_content = '''
-<div class="item ">
-    <img src="{poster_image_url}" alt="Flower">
+<div class={content_class!r}>
+    <img src="{poster_image_url}" alt="Flower" class="img-responsive center-block">
+    <div class="carousel-caption">
+        <h3>{movie_slider_title}</h3>
+        <p>{movie_slider_description}</p>
+    </div>
 </div>
 '''
 
+# Movie carousel indicator html template
+movie_slider_indicator_content = '''
+<li data-target="#movie-carousel" data-slide-to={slide_to_index:d} class={indicator_class!r}></li>
+'''
+
+
+def create_movie_slider_indicator(movies):
+    indicators = ''
+
+    # .active class needs to be set for first element
+    indicators += movie_slider_indicator_content.format(
+        slide_to_index=0,
+        indicator_class="active")
+
+    index = 1
+    for movie in movies[1:]:
+        indicators += movie_slider_indicator_content.format(
+            slide_to_index=index,
+            indicator_class="")
+        index += 1
+
+    return indicators
+
 
 def create_movie_slider_content(movies):
-    content = ''
-    for movie in movies:
-        trailer_youtube_id = extract_youtube_id(movie)
+    contents = ''
 
-        content += movie_slider_content.format(poster_image_url=movie.poster_image_url)
-    return content
+    # .active class needs to be set for first element
+    contents += movie_slider_content.format(
+        poster_image_url=movies[0].poster_image_url,
+        content_class="item active",
+        movie_slider_title=movies[0].title,
+        movie_slider_description="")
+
+    for movie in movies[1:]:
+        contents += movie_slider_content.format(
+            poster_image_url=movie.poster_image_url, content_class="item",
+            movie_slider_title=movie.title,
+            movie_slider_description="")
+    return contents
 
 
 # Extract Youtube Trailer ID
 def extract_youtube_id(movie):
     youtube_id_match = re.search(r'(?<=v=)[^&#]+', movie.trailer_youtube_url)
-    youtube_id_match = youtube_id_match or re.search(r'(?<=be/)[^&#]+', movie.trailer_youtube_url)
+    youtube_id_match = youtube_id_match or re.search(r'(?<=be/)[^&#]+',
+                                                     movie.trailer_youtube_url)
     trailer_youtube_id = youtube_id_match.group(0) if youtube_id_match else None
     return trailer_youtube_id
 
@@ -197,8 +231,10 @@ def open_movies_page(movies):
     output_file = open('fresh_tomatoes.html', 'w')
 
     # Replace the placeholder for the movie tiles with the actual dynamically generated content
-    rendered_content = main_page_content.format(movie_tiles=create_movie_tiles_content(movies),
-                                                movie_sliders=create_movie_slider_content(movies))
+    rendered_content = main_page_content.format(
+        movie_tiles=create_movie_tiles_content(movies),
+        movie_sliders=create_movie_slider_content(movies),
+        movie_sliders_indicators=create_movie_slider_indicator(movies))
 
     # Output the file
     output_file.write(main_page_head + rendered_content)
