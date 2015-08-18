@@ -53,6 +53,9 @@ main_page_head = '''
             top: 0;
             background-color: white;
         }
+        #movie-carousel{
+            margin-bottom: 60px;
+        }
     </style>
     <script type="text/javascript" charset="utf-8">
         // Pause the video when the modal is closed
@@ -114,6 +117,9 @@ main_page_content = '''
     </div>
 
     <div class="container">
+        <div class="page-header">
+            <h1>Featured Movies</h1>
+        </div>
         <div id="movie-carousel" class="carousel slide" data-ride="carousel">
             <!-- Indicators -->
             <ol class="carousel-indicators">
@@ -156,11 +162,11 @@ movie_tile_content = '''
 movie_slider_content = '''
 <div class={content_class!r}>
     <a href="#" class="movie-carousel" data-trailer-youtube-id={data_trailer_youtube_id} data-toggle="modal" data-target="#trailer">
-    <img src="{poster_image_url}" alt="Flower" class="img-responsive center-block">
-    <div class="carousel-caption">
-        <h3>{movie_slider_title}</h3>
-        <p>{movie_slider_description}</p>
-    </div>
+        <img src="{poster_image_url}" alt="Flower" class="img-responsive center-block">
+        <div class="carousel-caption">
+            <h3>{movie_slider_title}</h3>
+            <p>{movie_slider_description}</p>
+        </div>
     </a>
 </div>
 '''
@@ -179,6 +185,7 @@ def create_movie_slider_indicator(movies):
         slide_to_index=0,
         indicator_class="active")
 
+    # Make indicators
     index = 1
     for movie in movies[1:]:
         indicators += movie_slider_indicator_content.format(
@@ -200,6 +207,7 @@ def create_movie_slider_content(movies):
         movie_slider_description="",
         data_trailer_youtube_id=extract_youtube_id(movies[0]))
 
+    # Append slides which will be used inside carousel
     for movie in movies[1:]:
         contents += movie_slider_content.format(
             poster_image_url=movie.poster_image_url, content_class="item",
