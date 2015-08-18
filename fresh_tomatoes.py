@@ -61,8 +61,8 @@ main_page_head = '''
             // reliable way to ensure the video stops playing in IE
             $("#trailer-video-container").empty();
         });
-        // Start playing the video whenever the trailer modal is opened
-        $(document).on('click', '.movie-tile', function (event) {
+        // function to open trailer modal
+        var open_trailer = function (event) {
             var trailerYouTubeId = $(this).attr('data-trailer-youtube-id')
             var sourceUrl = 'http://www.youtube.com/embed/' + trailerYouTubeId + '?autoplay=1&html5=1';
             $("#trailer-video-container").empty().append($("<iframe></iframe>", {
@@ -71,7 +71,10 @@ main_page_head = '''
               'src': sourceUrl,
               'frameborder': 0
             }));
-        });
+        }
+        // Start playing the video whenever the trailer modal is opened
+        $(document).on('click', '.movie-tile', open_trailer);
+        $(document).on('click', '.movie-carousel', open_trailer);
         // Animate in the movies when the page loads
         $(document).ready(function () {
           $('.movie-tile').hide().first().show("fast", function showNext() {
@@ -152,11 +155,13 @@ movie_tile_content = '''
 # Movie carousel html template
 movie_slider_content = '''
 <div class={content_class!r}>
+    <a href="#" class="movie-carousel" data-trailer-youtube-id={data_trailer_youtube_id} data-toggle="modal" data-target="#trailer">
     <img src="{poster_image_url}" alt="Flower" class="img-responsive center-block">
     <div class="carousel-caption">
         <h3>{movie_slider_title}</h3>
         <p>{movie_slider_description}</p>
     </div>
+    </a>
 </div>
 '''
 
@@ -192,13 +197,15 @@ def create_movie_slider_content(movies):
         poster_image_url=movies[0].poster_image_url,
         content_class="item active",
         movie_slider_title=movies[0].title,
-        movie_slider_description="")
+        movie_slider_description="",
+        data_trailer_youtube_id=extract_youtube_id(movies[0]))
 
     for movie in movies[1:]:
         contents += movie_slider_content.format(
             poster_image_url=movie.poster_image_url, content_class="item",
             movie_slider_title=movie.title,
-            movie_slider_description="")
+            movie_slider_description="",
+            data_trailer_youtube_id=extract_youtube_id(movie))
     return contents
 
 
